@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "neurosym tools for llms"
+name = "neurosym-tools-for-llms"
 version = "0.1.0"
 description = ""
 authors = ["Michailidis-Stavros <stmi2003@gmail.com>"]
@@ -18,4 +18,5 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 # add main endpoint
-main = "LLMS-WITH-TOOLS:main"
+[tool.poetry.scripts]
+main = "main"
