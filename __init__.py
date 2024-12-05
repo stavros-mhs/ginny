@@ -4,9 +4,9 @@ from bashtool import BashTool
 from langchain_community.tools import ReadFileTool
 
 from .blocks import while_loop, execute
-from .pdfloadertool import PdfTool
-from .gcctool import GccTool
-from .customwritetool import WriteFileTool
+from tools.pdfloadertool import PdfTool
+from tools.gcctool import GccTool
+from tools.customwritetool import WriteFileTool
 
 def main():
     """Simple neurosymbolic solver with bash/read/write file capabilities."""
