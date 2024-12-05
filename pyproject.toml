@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "neurosym tools for llms"
 version = "0.1.0"
-description = "monitoring the behavior of LLM outputs' when given neurosymbolic tools"
+description = ""
 authors = ["Michailidis-Stavros <stmi2003@gmail.com>"]
 readme = "README.md"
 
@@ -16,3 +16,6 @@ langgraph = "^0.2.56"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+# add main endpoint
+main = "LLMS-WITH-TOOLS:main"
