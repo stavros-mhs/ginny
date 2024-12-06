@@ -43,7 +43,7 @@ SYSTEM_PROMPT = os.environ.get("NEUROSYM_SYSTEM_PROMPT",
                                """Solve the coding task you were provided. 
                                You can run as many actions as necessary to solve the problem.
                                You can use all tools at your disposal.
-                               Write the code that seems correct to you according to the task.
+                               Write the code that seems correct to you according to the task provided.
                                Try to not instantly double back on your intermediate results.
                                """)
 
