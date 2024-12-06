@@ -21,7 +21,7 @@ class GccTool (BaseTool):
     args_schema: Type[BaseModel] = GccInput
 
     def _run (self, path: str) -> str:
-        print (f"compiling {path}.")
+        print (f"##Gcc tool used.")
 
         process = run(["gcc", "-O0", "-m32", "-Wall", "-Wextra", "-Werror", "-pedantic", "-o", "main", path], capture_output=True)
         stdout = process.stdout.decode("utf-8")
