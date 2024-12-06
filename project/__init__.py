@@ -1,12 +1,12 @@
 import sys
 
-from bashtool import BashTool
+from project.tools.bashtool import BashTool
 from langchain_community.tools import ReadFileTool
 
 from .blocks import while_loop, execute
-from tools.pdfloadertool import PdfTool
-from tools.gcctool import GccTool
-from tools.customwritetool import WriteFileTool
+from project.tools.pdfloadertool import PdfTool
+from project.tools.gcctool import GccTool
+from project.tools.customwritetool import WriteFileTool
 
 def main():
     """Simple neurosymbolic solver with bash/read/write file capabilities."""
