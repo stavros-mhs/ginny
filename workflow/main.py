@@ -1,7 +1,7 @@
 import sys
 
-from pdf_to_json import pdftojson
-from extract_tests import extract_test_cases
+from utils.pdf_to_json import pdftojson
+from .extract_tests import extract_test_cases
 
 if __name__ == "__main__":
     pdf_path = sys.argv [1]
