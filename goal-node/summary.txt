@@ -1,5 +1,0 @@
-The goal of this assignment is to write a program in C that calculates the maximum length of the Collatz sequence for a given range of positive integers. The program should follow the Collatz conjecture rules: if the number is even, divide it by 2; if odd, apply the formula \(3 \times N + 1\) until reaching 1. 
-
-For example, for the range 1 to 10, the output should be the maximum length of the sequence found within that range, which is 20. The program must handle input validation and return 0 for any non-positive integers. 
-
-Make sure to implement the program in the C language and ensure it compiles without warnings.
