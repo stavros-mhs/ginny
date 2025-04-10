@@ -2,8 +2,8 @@ import os
 
 from langchain_openai import ChatOpenAI
 
-from state import AgentState
-from config import GraphConfig
+from utils.state import AgentState
+from utils.config import GraphConfig
 
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
