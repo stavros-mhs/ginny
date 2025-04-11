@@ -25,10 +25,15 @@ def should_continue (state):
         return "continue"
 
 # this can def be improved
-SYSTEM_PROMPT = os.environ.get ("SYSTEM_PROMPT", """You're a LLM agent node in a workflow meant to implement software for the task provided. 
-                                                    You'll be given tools to write code and read what you wrote to make corrections. 
-                                                    Your code will be given to a validator who will automatically test what you wrote and 
-                                                    if any test case returns an error you'll be required to re-write the implementation.""")
+SYSTEM_PROMPT = os.environ.get ("SYSTEM_PROMPT", """
+                                You're a LLM agent node in a workflow meant to implement software for the task provided. 
+                                You'll be given tools to write code and read what you wrote to make corrections. 
+                                Your code will be given to a validator who will automatically test what you wrote and 
+                                if any test case returns an error you'll be required to re-write the implementation.
+                                Make sure any inputs expected will be given via argv. _Not_ scanf
+
+                                
+                                """)
 
 def call_model (state, config, model):
     messages = state ["messages"]
