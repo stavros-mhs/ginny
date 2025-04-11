@@ -1,34 +1,37 @@
 import sys
-import subprocess
 import shlex
+import subprocess
 
-from pdf_to_json import pdftojson
-from extract_tests import extract_test_cases
+from utils.pdf_to_json import pdftojson
+from workflow.extract_tests import extract_test_cases
 
-def validate (test_cases: dict) -> dict:
-    #! BUG WHEN RUNNING SUBPROCESS
-    #! CALLS PROGRAM NAME WRAPPED IN SINGLE QUOTES
-    testing = dict ()
-    for case in test_cases:
-        case = case.strip ()
-        if (case.startswith("'") and case.endswith("'")) or (case.startswith('"') and case.endswith('"')):
-            case = case[1:-1]      
+def validate (test_cases: dict):
+    passed = 0
 
-        output = subprocess.run (case, capture_output=True)    
-        testing [case] = output.stdout
-    
-    passed = dict ()
-    for out in testing:
-        passed [out] = passed [out] != 0
+    for command, expected_out in test_cases.items ():
+        cmd = shlex.split (command)
 
-    return passed
+        result = subprocess.run (cmd, capture_output=True, text=True, timeout=11)
+        result_out = result.stdout.strip ()
+        # error_out = result.stderr.strip ()
+
+        if result_out == expected_out:
+            print (f'[PASS]: {command}')
+            passed += 1
+        else:
+            print (f'[FAIL]: {command}')
+            print (f'EXPECTED: {expected_out!r}')
+            # print (f'GOT     : {result_out!r}')
+
+            # if error_out:
+            #     print (f'STDERR: {error_out!r}')
+    print (f'CASES PASSED: {passed}')
+
 
 if __name__ == "__main__":
     pdf_path = sys.argv [1]
     jsonify_pdf = pdftojson (pdf_path)
-    
     test_cases = extract_test_cases (jsonify_pdf)
     
-    validation = dict ()
     validate (test_cases)
     
