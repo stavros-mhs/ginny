@@ -5,7 +5,7 @@ from src.utils.pdf_to_json import pdftojson
 
 from langchain_community.tools import ReadFileTool, WriteFileTool
 
-def run(pdf_path):
+def run_goal (pdf_path):
     make_to_json = pdftojson (pdf_path)
 
     toolbox = [ReadFileTool (verbose=True), WriteFileTool (verbose=True)]
