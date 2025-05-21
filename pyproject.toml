@@ -1,3 +1,6 @@
+[tool.poetry.scripts]
+Ginny = "src.cli.__main__:main" 
+
 [tool.poetry]
 name = "project"
 version = "0.1.0"
@@ -16,7 +19,3 @@ langgraph = "^0.2.56"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-# add main endpoint
-[tool.poetry.scripts]
-main = "project:main"
