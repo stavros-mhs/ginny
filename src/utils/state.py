@@ -4,3 +4,5 @@ from langgraph.graph import add_messages
 
 class AgentState (TypedDict):
     messages: Annotated [Sequence [BaseMessage], add_messages]
+    parsed_pdf: dict
+    test_cases: dict

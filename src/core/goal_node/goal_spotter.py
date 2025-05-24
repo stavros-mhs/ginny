@@ -40,9 +40,9 @@ SYSTEM_PROMPT = os.environ.get ("SYSTEM_PROMPT", """You're a LLM agent node in a
 #? Would writing the output and providing it with read access yield better results?
 #TODO can also test one shot w/o iteration capabilities 
 
-def call_model (state, config, model):
+def call_model (state, config, model, prompt):
     messages = state ["messages"]
-    messages = [{"role": "system", "content": SYSTEM_PROMPT}] + messages
+    messages = [{"role": "system", "content": prompt}] + messages
     response = model.invoke (messages)
 
     return {"messages": [response]}
@@ -51,10 +51,10 @@ def iterate (toolbox):
     workflow = StateGraph (AgentState, GraphConfig)
     tool_node = ToolNode (toolbox)
 
-    model = ChatOpenAI (temperature=0.5, model=NEUROSYM_DEFAULT_MODEL)
+    model = ChatOpenAI (temperature=0.5, model=NEUROSYM_DEFAULT_MODEL, timeout=10)
     model = model.bind_tools (toolbox)
 
-    workflow.add_node ("spot_goal", partial (call_model, model=model))
+    workflow.add_node ("spot_goal", partial (call_model, model=model, prompt=SYSTEM_PROMPT))
     workflow.set_entry_point ("spot_goal")
 
     workflow.add_node ("action", tool_node)
