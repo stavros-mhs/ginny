@@ -5,15 +5,15 @@ Ginny = "src.cli.__main__:main"
 name = "project"
 version = "0.1.0"
 description = ""
-authors = ["Michailidis-Stavros <stmi2003@gmail.com>"]
+authors = ["stavros-mhs <stmi2003@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
-langchain = "^0.3.9"
-langchain-community = "^0.3.9"
-langchain-openai = "^0.2.11"
-langgraph = "^0.2.56"
+python = "3.12"
+langchain = "0.3.9"
+langchain-community = "0.3.9"
+langchain-openai = "0.2.11"
+langgraph = "0.2.56"
 
 
 [build-system]
