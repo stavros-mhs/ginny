@@ -4,3 +4,4 @@ __pycache__/
 *.txt
 *.c
 local_tests/
+spot_goal.py
