@@ -13,4 +13,4 @@ def run_goal (pdf_path):
     result = execute (program, json.dumps (make_to_json, indent=2, ensure_ascii=False))
 
     with open ("goal.txt", "w") as f:
-        f.write (result)
+        f.write (result + "\n")
