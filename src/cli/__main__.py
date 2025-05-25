@@ -6,7 +6,7 @@ from src.cli.validate import run_val
 from src.cli.solve import run_solve
 
 def main ():
-    parser = argparse.ArgumentParser (prog="ginny", description="Ginny\'s CLI")
+    parser = argparse.ArgumentParser (prog="Ginny", description="Ginny\'s CLI")
     subparsers = parser.add_subparsers (dest="command", required=True)
 
     # defining spot_goal command

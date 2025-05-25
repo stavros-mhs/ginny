@@ -1,5 +1,5 @@
 [tool.poetry.scripts]
-Ginny = "src.cli.__main__:main" 
+ginny = "src.cli.__main__:main" 
 
 [tool.poetry]
 name = "project"
@@ -14,6 +14,7 @@ langchain = "0.3.9"
 langchain-community = "0.3.9"
 langchain-openai = "0.2.11"
 langgraph = "0.2.56"
+pypdf = "5.5.0"
 
 
 [build-system]
