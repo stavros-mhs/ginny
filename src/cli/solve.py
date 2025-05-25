@@ -1,2 +1,4 @@
+from workflow.graph import solve, execute
+
 def run_solve (pdf_path):
-    pass
+    execute (solve (), pdf_path)
