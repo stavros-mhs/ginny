@@ -19,10 +19,10 @@ from workflow.extract_tests import extract_test_cases
 from workflow.read_json import ReadParsedPDF
 from src.core.validation.validation import validate
 
-SG_SYSTEM_PROMPT = os.environ.get ("SYSTEM_PROMPT", """You're a LLM agent node in a workflow. There's a json saved in the state of the workflow you're in.
+SG_SYSTEM_PROMPT = os.environ.get(
+    "SYSTEM_PROMPT",
+    """You're a LLM agent node in a workflow. You will be given a prompt that contains the goal of a coding assignment.
                                    It contains a coding assignment of undergraduate level difficult from an 'Introduction to Programming' course.
-                                   You'll be given a tool to acccess the json add it to the context window. in case it leaves your context window you can
-                                   use the tool again. After that, use the Write tool at your disposal to write the summary of the assignment on a file named goal.txt
                                    The assignment will likely be be in C (but not neccesarilly).
                                    What you have to do is spot the goal of the assignment and summarize it in a concise way so
                                    that the person implementing the gets the gist of it.
@@ -30,88 +30,121 @@ SG_SYSTEM_PROMPT = os.environ.get ("SYSTEM_PROMPT", """You're a LLM agent node i
                                    Mention _explicitly_ the language in which the assignment must be written in.
                                    Maybe choose 1 or 2 examples and add them. In general, keep it _brief_ and _to the point_.
                                    You are given the option to iterate before you turn in your summary if you believe you can make it better.
-                                """)
+                                """,
+)
 
-IMPL_SYSTEM_PROMPT = os.environ.get ("SYSTEM_PROMPT", """
-                                You're a LLM agent node in a workflow meant to implement software for the task provided. 
-                                You'll be given tools to write code and read what you wrote to make corrections. 
-                                Your code will be given to a validator who will automatically test what you wrote and 
+IMPL_SYSTEM_PROMPT = os.environ.get(
+    "SYSTEM_PROMPT",
+    """
+                                You're a LLM agent node in a workflow meant to implement software for the task provided.
+                                You'll be given tools to write code and read what you wrote to make corrections.
+                                Your code will be given to a validator who will automatically test what you wrote and
                                 if any test case returns an error you'll be required to re-write the implementation.
                                 Make sure any inputs expected will be given via argv. _Not_ scanf.
-                                """)
+                                """,
+)
 
-NEUROSYM_DEFAULT_MODEL = os.environ.get ("NEUROSYM_DEFAULT_MODEL", "gpt-4o-mini")
+NEUROSYM_DEFAULT_MODEL = os.environ.get("NEUROSYM_DEFAULT_MODEL", "gpt-4o-mini")
 
-def make_json (state, config):
-    pdf_path = state ["messages"][-1].content
-    parsed_pdf = pdftojson (pdf_path)
-    # print (parsed_pdf)
-    return {"parsed_pdf": parsed_pdf}
 
-def get_tests (state, config):
-    parsed_pdf = state ["parsed_pdf"]
-    test_cases = extract_test_cases (parsed_pdf)
-    # print (test_cases)
+def extract_text(state, config):
+    pdf_path = state["messages"][-1].content
+    extracted_text = "\n\n".join(pdftojson(pdf_path)["pages"])
+    print("extract_text", extracted_text)
+    return {"extracted_text": extracted_text}
+
+
+def get_tests(state, config):
+    extracted_text = state["extracted_text"]
+    test_cases = extract_test_cases(extracted_text)
+    print("get_tests", test_cases)
     return {"test_cases": test_cases}
 
-def call_model (state, config, model, prompt):
-    messages = state ["messages"]
-    messages = [{"role": "system", "content": prompt}]  + messages
-    response = model.invoke (messages)
-    # print ("Model response: ", response)
+
+def call_model(state, config, model, prompt):
+    messages = state["messages"]
+    messages = [{"role": "system", "content": prompt}] + messages
+    response = model.invoke(messages)
+    print("Model response: ", response, "to the prompt: ", prompt)
     return {"messages": [response]}
 
 
-def should_continue (state):
-    messages = state ["messages"]
-    last_message = messages [-1]
+def summarize(state, config, model, prompt):
+    summary_text = state["extracted_text"]
+    # initialize messages as human message with the summary text
+    messages = [HumanMessage(content=summary_text)]
+    messages = [{"role": "system", "content": prompt}] + messages
+    response = model.invoke(messages)
+    summary = response.content
+    print("Model response: ", response, "to the prompt: ", prompt)
+    return {"messages": [response], "assignment_summary": summary}
 
-    print (last_message.tool_calls)
+
+def should_continue(state):
+    messages = state["messages"]
+    last_message = messages[-1]
+
+    print("should_continue?", last_message.tool_calls, messages[-1])
     if not last_message.tool_calls:
         return "end"
     else:
         return "continue"
 
-def solve ():
-    workflow = StateGraph (AgentState, GraphConfig)
 
-    #=======NODE DEFINITIONS=======#
-    workflow.add_node ("make_json", make_json)
-    workflow.set_entry_point ("make_json") #! entry point
+def solve():
+    workflow = StateGraph(AgentState, GraphConfig)
 
-    workflow.add_node ("get_tests", get_tests)
+    # =======NODE DEFINITIONS=======#
+    workflow.add_node("extract_text", extract_text)
+    workflow.set_entry_point("extract_text")  #! entry point
 
-    #=======SPOT GOAL + SG TOOLS=======#
-    sg_model = ChatOpenAI (temperature=0.5, model=NEUROSYM_DEFAULT_MODEL, timeout=10)
-    
-    sg_toolbox = [WriteFileTool (verbose=True), ReadParsedPDF]
-    sg_toolnode = ToolNode (sg_toolbox)
+    workflow.add_node("get_tests", get_tests)
 
-    sg_model = sg_model.bind_tools (sg_toolbox)
+    # =======SPOT GOAL + SG TOOLS=======#
+    summarizer_model = ChatOpenAI(
+        temperature=0.5, model=NEUROSYM_DEFAULT_MODEL, timeout=10
+    )
 
-    workflow.add_node ("spot_goal", partial (call_model, model=sg_model, prompt=SG_SYSTEM_PROMPT))
-    workflow.add_node ("sg_action", sg_toolnode)
+    # sg_toolbox = [WriteFileTool(verbose=True), ReadParsedPDF]
+    # sg_toolnode = ToolNode(sg_toolbox)
 
-    #=======EDGE DEFINITIONS=======#
-    workflow.add_edge ("make_json", "get_tests")
-    workflow.add_edge ("get_tests", "spot_goal")
+    # summarizer_model = summarizer_model.bind_tools(sg_toolbox)
 
-    workflow.add_conditional_edges ("spot_goal", should_continue, {"continue": "sg_action", "end": END})
-    workflow.add_edge ("sg_action", "spot_goal")
+    workflow.add_node(
+        "summarizer",
+        partial(summarize, model=summarizer_model, prompt=SG_SYSTEM_PROMPT),
+    )
+    # workflow.add_node("sg_action", sg_toolnode)
 
-    checkpointer = MemorySaver ()
-    graph = workflow.compile (checkpointer=checkpointer)
+    # =======EDGE DEFINITIONS=======#
+    workflow.add_edge("extract_text", "get_tests")
+    workflow.add_edge("get_tests", "summarizer")
+
+    # workflow.add_conditional_edges(
+    #     "summarizer", should_continue, {"continue": "sg_action", "end": END}
+    # )
+    # workflow.add_edge("sg_action", "summarizer")
+
+    workflow.add_edge("summarizer", END)
+
+    checkpointer = MemorySaver()
+    graph = workflow.compile(checkpointer=checkpointer)
     return graph
 
-def execute (program, user_in):
-    final_state = program.invoke (
+
+def execute(program, user_in):
+    final_state = program.invoke(
         {
-            "messages": [HumanMessage (content=user_in)],
-            "parsed_pdf": {}
+            "messages": [HumanMessage(content=user_in)],
+            "extracted_text": "",
+            "assignment_summary": "",
+            "implementation": "",
+            "test_cases": {},
         },
-        config = {
-            "configurable": {"thread_id": 24},
-            "recursion_limit": 100
-        }
+        config={"configurable": {"thread_id": 24}, "recursion_limit": 100},
     )
-    return final_state["parsed_pdf"]
+    print("I just computed the final state, here are the contents")
+    print("extracted_text", final_state["extracted_text"])
+    print("assignment_summary", final_state["assignment_summary"])
+    print("implementation", final_state["implementation"])
+    print("test_cases", final_state["test_cases"])

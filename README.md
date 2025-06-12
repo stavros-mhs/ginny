@@ -7,7 +7,7 @@ Set up a virtual environment using:
 python3 -m venv venv
 . ./venv/bin/active
 ```
-and then run 
+and then run
 ```
 poetry install
 ```
@@ -38,7 +38,7 @@ In the WIP branch I've implemented a more sophisticated workflow cycle (see the 
 
     make_to_json --> summarize_task
     summarize_task --> implementer
-    
+
     implementer --> validation
     validation --> implementer
 
@@ -68,7 +68,7 @@ all the commands that follow need to be run inside the root of the project for i
 
 this will get summarize the task contained in the pdf you inputed and write it in summary.txt.
 
-3. copy the contents of summary.txt and run `python3 -m implementation-node.main "...what you copied from summary.txt..."` 
+3. copy the contents of summary.txt and run `python3 -m implementation-node.main "...what you copied from summary.txt..."`
 
 this will create an implementation attempting to solve the problem
 
@@ -81,7 +81,7 @@ the path for `input.pdf` is needed to extract the test cases so you can validate
 we have the following nodes:
 
 Agent Nodes:
-1. Spot Goal --> summarizes the task
+1. Summarizer --> summarizes the task
     + str --> str
 2. Implementer --> makes the implementation
     + str -->? test_out --> source.c
@@ -94,3 +94,15 @@ Automated Nodes:
     + json --> python dict of the form key=command, value=expected_out
 3. validation --> validates the implementation given the test cases
     + python dict --> boolean
+
+```mermaid
+graph TD
+
+    pdf --> extract_text --> extracted_text(extracted_text: str) --> summarizer --> summary(summary: str)
+
+    extracted_text --> get_tests --> tests
+
+
+```
+
+# summarizer --> ReadPage --> summarizer
