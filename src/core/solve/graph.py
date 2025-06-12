@@ -15,8 +15,8 @@ from langchain_community.tools import ReadFileTool, WriteFileTool
 from langchain_core.messages import HumanMessage
 
 from src.utils.pdf_to_json import pdftojson
-from workflow.extract_tests import extract_test_cases
-from workflow.read_json import ReadParsedPDF
+from src.utils.extract_tests import extract_test_cases
+from src.core.solve.read_json import ReadParsedPDF
 from src.core.validation.validation import validate
 
 SG_SYSTEM_PROMPT = os.environ.get(
