@@ -77,3 +77,20 @@ this will create an implementation attempting to solve the problem
 the path for `input.pdf` is needed to extract the test cases so you can validate\* the code made in step 3.
 
 \* validation will crush in case of timeouts
+## Architecture
+we have the following nodes:
+
+Agent Nodes:
+1. Spot Goal --> summarizes the task
+    + str --> str
+2. Implementer --> makes the implementation
+    + str -->? test_out --> source.c
+
+Automated Nodes:
+1. make_json --> turns pdf to json
+    + file.pdf --> json
+    + json has pages field
+2. get_tests --> extracts test cases
+    + json --> python dict of the form key=command, value=expected_out
+3. validation --> validates the implementation given the test cases
+    + python dict --> boolean
