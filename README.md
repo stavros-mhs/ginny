@@ -1,29 +1,43 @@
 ## Disclaimer: This is Alpha Software
 Demo depends on third party software and will allow the LLM to access your terminal! Do ***not*** run on non-virtualized environments. Handle with care.
 
-## Install
-Set up a virtual environment using:
+## Introducing Ginny!
+
+
+## How to Install
+Clone the repostitory locally by running the following command:
+```
+git clone git@github.com:stavros-mhs/ginny
+```
+Afterwards `cd ginny` to move into the directory and create a python virtual environment
 ```
 python3 -m venv venv
+```
+and activate it using:
+```
 . ./venv/bin/active
 ```
-and then run
-```
-poetry install
-```
+Finally, to install dependencies firstly `pip install poetry` and afterwards run: `poetry install`
 
-if you haven't install poetry, you can do it through ```pip install poetry``` or your package manager (e.g., ```apt install poetry``` on Ubuntu).
+## Features
+Ginny supports (as of now) three utilities:
+1. summarize
+2. implement
+3. validate
 
-## Running
-To run, the app needs access to an AI provider, the simplest one is through:
+### summarize
+`ginny summarize` expects as input a pdf that contains a task for ginny to summarize. By running `ginny summarize path/to/file.pdf`, ginny will parse the pdf and write the summary in summary.txt
 
-```export OPENAI_API_KEY="...you key here..."```
+### implement
+`ginny implement` expects a task to implement software for. By running `ginny implement "make code that solves this assignment"`, ginny will attempt to create an implementation that solves the assignment given.
 
-to run the demo use:
+For example, if you have a `file.pdf` that contains some coding assignment, you can use `ginny summarize path/to/file.pdf` and copy and paste the summary as input to `ginny implement "pdf summary contents"`
 
-```poetry run main "what you want the LLM assistant to do for you"```
+### validate
 
-(keep in mind the System Prompt on blocks.py)
+`ginny validate` expects as input a pdf that contains test cases for some software implementation. By running `ginny validate path/to/file.pdf`, ginny will attempt to extract the test cases contained in the pdf and run them to validate the software. The results will of the execution will be written in `validate.txt`.
+
+### validate
 
 ## About WIP (Work In Progress) branch
 In the WIP branch I've implemented a more sophisticated workflow cycle (see the diagram below):
@@ -53,12 +67,7 @@ The cycle needs to be run manually:
     * a coding task you want to solve - somewhere around undergraduate level of difficulty
     * test cases to validate an implementation of the task
 
-**important:** run all of these on a python virutal environment
-* to make a python virtual environment: `python3 -m venv venv`
-this creates a virtual environment named venv. you need to source it next.
-* run `. ./venv/bin/activate`
-
-note: compilation of code needs to be done manually, I haven't yet automated that (but will attempt to in the future)
+**Note:** Compilation of code needs to be done manually, I haven't yet automated that (will attempt to in the future).
 
 1. export OPENAI_API_KEY="...your API key..."
 
@@ -106,3 +115,5 @@ graph TD
 ```
 
 # summarizer --> ReadPage --> summarizer
+
+## NOTE TO SELF: READ TO STR DOES NOT NEED TOOLS. Invoke seems to be enough.
