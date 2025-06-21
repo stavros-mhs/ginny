@@ -1,6 +1,6 @@
 import argparse
 
-from src.cli.spot_goal import run_goal
+from src.cli.summarize import run_goal
 from src.cli.implement import run_impl
 from src.cli.validate import run_val
 from src.cli.solve import run_solve
@@ -10,7 +10,7 @@ def main ():
     subparsers = parser.add_subparsers (dest="command", required=True)
 
     # defining spot_goal command
-    goal_parser = subparsers.add_parser ("spot_goal", help="spots the goal on the pdf given")
+    goal_parser = subparsers.add_parser ("summarize", help="sums up pdf given")
     goal_parser.add_argument ("pdf_path", help="path to requirments pdf")
 
     # defining implement command
@@ -26,7 +26,7 @@ def main ():
 
     args = parser.parse_args ()
 
-    if args.command == "spot_goal":
+    if args.command == "summarize":
         run_goal (args.pdf_path)
     elif args.command == "implement":
         run_impl (args.goal)
