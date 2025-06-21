@@ -1,7 +1,8 @@
+**/solve/
+src/cli/solve.py
 venv/
-__pycache__/
+**/__pycache__/
 *.py[cod]
 *.txt
 *.c
 local_tests/
-spot_goal.py
