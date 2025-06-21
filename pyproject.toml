@@ -2,11 +2,15 @@
 ginny = "src.cli.__main__:main" 
 
 [tool.poetry]
-name = "project"
+name = "ginny"
 version = "0.1.0"
 description = ""
 authors = ["stavros-mhs <stmi2003@gmail.com>"]
 readme = "README.md"
+
+packages = [
+  { include = "src" }
+]
 
 [tool.poetry.dependencies]
 python = ">=3.12, <4.0"
