@@ -13,15 +13,15 @@ Ginny is a CLI tool that automates the following workflow:
 The user provides a PDF file (`input.pdf`) containing the specifications for some software, along with the test cases that the implementation must pass.
 
 Ginny then:
-+ 📖 Read and convert the PDF to text
-+ 🧪 Extract the test cases
-+ 🛠️ Attempt to implement a solution
-+ 🔁 Iterate on the implementation until it passes all tests
++ 📖 Reads and converts the PDF to text
++ 🧪 Extracts the test cases
++ 🛠️ Attempts to implement a solution
++ 🔁 Iterates on the implementation until it passes all tests
 
 🧩 Currently, several parts of this workflow are implemented as standalone utilities.These are the following commands:
 + `ginny summarize ./path/to/input.pdf` Summarizes the task described in the PDF and saves it to `summary.txt`. This can be used later as input for the `implement` command.
 
-+ `ginny implement "task to implement"` Attempts to generate Python code to solve the given task.
++ `ginny implement "task to implement"` Attempts to generate code to solve the given task.
 
 + `ginny validate ./path/to/input.pdf`Extracts test cases from the PDF and runs them against the current implementation. Results are written to `logs.txt`.
 
