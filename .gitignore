@@ -1,5 +1,3 @@
-**/solve/
-src/cli/solve.py
 venv/
 **/__pycache__/
 *.py[cod]

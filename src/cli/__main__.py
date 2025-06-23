@@ -3,7 +3,7 @@ import argparse
 from src.cli.summarize import run_goal
 from src.cli.implement import run_impl
 from src.cli.validate import run_val
-# from src.cli.solve import run_solve
+from src.cli.solve import run_solve
 
 def main ():
     parser = argparse.ArgumentParser (prog="Ginny", description="Ginny\'s CLI")
@@ -32,8 +32,8 @@ def main ():
         run_impl (args.goal)
     elif args.command == "validate":
         run_val (args.pdf_path)
-    # elif args.command == "solve":
-    #    run_solve (args.pdf_path)
+    elif args.command == "solve":
+       run_solve (args.pdf_path)
     else:
         print ("unknown command given")
 
