@@ -1,6 +1,6 @@
 from langchain_community.document_loaders import PyPDFLoader
 
-def pdftostr (pdf_path: str) -> dict:
+def pdftostr (pdf_path: str) -> str:
     payload = PyPDFLoader (pdf_path)
     document = payload.load ()
 
