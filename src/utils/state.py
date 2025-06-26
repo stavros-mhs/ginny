@@ -6,6 +6,7 @@ from langgraph.graph import add_messages
 class AgentState (TypedDict):
     messages: Annotated [Sequence [BaseMessage], add_messages]
     extracted_text: str
-    assignment_summary: str
-    implementation: str
     test_cases: dict
+    assignment_summary: str
+    test_accuracy: int
+    validation_out: str
