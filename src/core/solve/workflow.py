@@ -6,9 +6,11 @@ from src.utils.state import AgentState
 from src.utils.config import GraphConfig
 from src.utils.pdf_to_str import pdftostr
 from src.utils.extract_tests import extract_test_cases
+from src.utils.validate import validate
 
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
+from langchain_community.tools import ReadFileTool, WriteFileTool
 
 from langgraph.checkpoint.memory import MemorySaver
 from functools import partial
@@ -31,6 +33,13 @@ SUMMARIZER_SYSTEM_PROMPT = os.environ.get ("SUMMARIZER_SYSTEM_PROMPT", """You're
                                 You are given the option to iterate before you turn in your summary if you believe you can make it better.
                                 """)
 
+IMPLEMENTER_SYSTEM_PROMPT = os.environ.get ("IMPLEMENTER_SYSTEM_PROMPT", """You're a LLM agent node in a workflow meant to implement software for the task provided.
+                                _Provide code_. You'll be given tools to write code and read what you wrote to make corrections. 
+                                Your code will be given to a validator who will automatically test what you wrote and 
+                                if any test case returns an error you'll be required to re-write the implementation.
+                                Make sure any inputs expected will be given via argv. _Not_ scanf.
+                                """)
+
 def should_continue (state):
     messages = state ["messages"]
     last_message = messages [-1]
@@ -48,21 +57,26 @@ def call_model (state, config, model, prompt):
     messages = [SystemMessage (prompt)] + messages
     response = model.invoke (messages)
 
-    return {"messages": [response]}
+    return {
+        **state,
+        "messages": [response],
+        }
 
 def pdftostr_wrapper (state: AgentState):
     extracted = pdftostr (state ["messages"][-1].content)
     return {
+        **state,
         "extracted_text": extracted
     }
 
 def extract_test_cases_wrapper (state: AgentState):
     test_cases = extract_test_cases (state ["extracted_text"])
     return {
+        **state,
         "test_cases": test_cases
     }
 
-def get_sumamry (state: AgentState):
+def get_summary (state: AgentState):
     extracted = state["extracted_text"]
     summarizer = ChatOpenAI (temperature=0.5, model=NEUROSYM_DEFAULT_MODEL, timeout=10)
 
@@ -72,28 +86,61 @@ def get_sumamry (state: AgentState):
     ]
 
     response = summarizer.invoke (messages)
-    return {"assignment_summary": response.content}
+    
+    return {
+        **state,
+        "assignment_summary": response.content
+        }
 
-def show_res (state: AgentState):
-    print (">> EXTRACTED TEXT:\n")
-    print (state ["extracted_text"])
-    print ("\n")
-    print (">> EXTRACTED TEST CASES\n")
-    for test_case in state["test_cases"]:
-        print (test_case)
-    print (">> SUMMARY MADE:\n")
-    print (state ["assignment_summary"])
-    print ("\n")
-    return {"messages": "done"}
+def create_prompt (state: AgentState):
+    assignment_summary = state ["assignment_summary"]
+    test_cases = "\n".join (f"{cmd}{exp_out}" for cmd, exp_out in state ["test_cases"].items ())    
+    validation_out = state ["validation_out"]
+
+    prompt = assignment_summary + test_cases + validation_out
+    
+    new_message = state ["messages"] + [HumanMessage (content=prompt)]
+    return {
+        **state,
+        "messages": new_message
+        }
+    
+def validate_wrapper (state: AgentState):
+    test_cases = state ["test_cases"]
+    validation_out, accuracy = validate (test_cases)
+
+    return {
+        **state,
+        "validation_out": validation_out,
+        "test_accuracy": accuracy
+        }
+
+def pass_validation (state: AgentState):
+    accuracy = state ["test_accuracy"]
+    if accuracy > 0.9:
+        return "end"
+    else:
+        return "try_again"
 
 def iterate ():
     workflow = StateGraph (AgentState, GraphConfig)    
 
+    # defining implementer agent and toolbox
+    toolbox = [ReadFileTool (verbose=True), WriteFileTool (verbose=True)]
+    implementer = ChatOpenAI (temperature=0.8, model=NEUROSYM_DEFAULT_MODEL)
+    implementer = implementer.bind_tools (toolbox)
+    impl_toolnode = ToolNode (toolbox)
+
     # node definitions
     workflow.add_node ("pdf_to_str", pdftostr_wrapper)
     workflow.add_node ("extract_tests", extract_test_cases_wrapper)
-    workflow.add_node ("summarizer", get_sumamry)
-    workflow.add_node ("show_res", show_res)
+    workflow.add_node ("summarizer", get_summary)
+    workflow.add_node ("create_prompt", create_prompt)
+
+    workflow.add_node ("implementer", partial (call_model, model=implementer, prompt=IMPLEMENTER_SYSTEM_PROMPT))
+    workflow.add_node ("impl_action", impl_toolnode)
+
+    workflow.add_node ("validation", validate_wrapper)
 
     # set graph's entry point
     workflow.set_entry_point ("pdf_to_str")
@@ -101,10 +148,17 @@ def iterate ():
     # define graph's edges
     workflow.add_edge ("pdf_to_str", "extract_tests")
     workflow.add_edge ("pdf_to_str", "summarizer")
-    workflow.add_edge ("extract_tests", "show_res")
-    workflow.add_edge ("summarizer", "show_res")
+    workflow.add_edge ("extract_tests", "create_prompt")
+    workflow.add_edge ("summarizer", "create_prompt")
+    workflow.add_edge ("create_prompt", "implementer")
 
-    # moel has memory
+    workflow.add_conditional_edges ("implementer", should_continue, {"continue": "impl_action", "end": "validation"})
+    workflow.add_edge ("impl_action", "implementer")
+    
+    workflow.add_edge ("implementer", "validation")
+    workflow.add_conditional_edges ("validation", pass_validation, {"end": END, "try_again": "create_prompt"})
+
+    # model has memory
     checkpointer = MemorySaver ()
     # compile graph
     graph = workflow.compile (checkpointer=checkpointer)
@@ -116,5 +170,12 @@ def iterate ():
     return graph
 
 def execute (program, user_in:str) -> str:
-    final_state = program.invoke ({"messages": [HumanMessage (content=user_in)]}, config= {"configurable": {"thread_id": 24}, "recursion_limit": 100})
+    initial_state = {
+        "messages": [HumanMessage (content=user_in)],
+        "extracted_text": "",
+        "test_cases": {},
+        "implementation": "",
+        "validation_out": ""
+    }
+    final_state = program.invoke (initial_state, config= {"configurable": {"thread_id": 24}, "recursion_limit": 100})
     return final_state ["messages"][-1].content
