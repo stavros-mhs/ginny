@@ -1,3 +1,5 @@
+import shutil
+
 from src.utils.state import AgentState
 from src.utils.pdf_to_str import pdftostr
 from src.utils.extract_tests import extract_test_cases
@@ -38,13 +40,21 @@ def call_model(state, config, model, prompt):
 # NODE SPECIFIC LOGIC
 def pdftostr_wrapper(state: AgentState):
     extracted = pdftostr(state["messages"][-1].content)
-    print("pdf to string conversion finished")
+
+    width = shutil.get_terminal_size().columns
+    print("=" * width)
+    print("PDF TO STRING CONVERSION FINISHED")
+
     return {**state, "extracted_text": extracted}
 
 
 def extract_test_cases_wrapper(state: AgentState):
     test_cases = extract_test_cases(state["extracted_text"])
-    print("test case extraction finished")
+
+    width = shutil.get_terminal_size().columns
+    print("=" * width)
+    print("TEST CASE EXTRACTION FINISHED")
+
     return {**state, "test_cases": test_cases}
 
 
@@ -58,15 +68,21 @@ def get_summary(state: AgentState):
     ]
 
     response = summarizer.invoke(messages)
-    print("summarizing finished")
+
+    width = shutil.get_terminal_size().columns
+    print("=" * width)
+    print("SUMMARIZING FINISHED")
+
     return {**state, "assignment_summary": response.content}
 
 
 # CREATE PROMPT FOR IMPLEMENTER
 def create_prompt(state: AgentState):
     assignment_summary = state["assignment_summary"]
+
     test_cases = "\n".join(
-        f"{cmd}{exp_out}" for cmd, exp_out in state["test_cases"].items()
+        f"{cmd} w/ expected out {exp_out}"
+        for cmd, exp_out in state["test_cases"].items()
     )
     validation_out = state["validation_out"]
     exit_code = state["exit_code"]
@@ -74,19 +90,42 @@ def create_prompt(state: AgentState):
 
     # if compiling for the first time
     if exit_code == -1:
-        prompt = assignment_summary + test_cases + validation_out
+        prompt = (
+            "Assignment summary is:\n"
+            + assignment_summary
+            + "\nBelow are the test cases you'll be evaluated on:\n"
+            + test_cases
+        )
+    # else, if compilation failed:
+    elif exit_code == 1:
+        prompt = (
+            "Asignment summary is:\n"
+            + assignment_summary
+            + "\nBelow are the test cases you'll be evaluated on:\n"
+            + test_cases
+            + "\n"
+            + compilation_out
+            + "Did not reach validation step cause compilation failed."
+        )
     else:
         prompt = (
-            assignment_summary
+            "Assignment summary is:\n"
+            + assignment_summary
+            + "\n"
+            + "Below are the test cases you'll be evaluated on:\n"
             + test_cases
-            + str(exit_code)
+            + "\n"
             + compilation_out
+            + "Validation output:"
+            + "\n"
             + validation_out
         )
 
-    new_message = state["messages"] + [HumanMessage(content=prompt)]
+    width = shutil.get_terminal_size().columns
+    print("=" * width)
+    print(f"PROMT MADE:\n{prompt}")
 
-    print("prompt made")
+    new_message = state["messages"] + [HumanMessage(content=prompt)]
     return {**state, "messages": new_message}
 
 
@@ -94,10 +133,13 @@ def create_prompt(state: AgentState):
 def compilation_wrapper(state: AgentState):
     exit_code, stderr = comp()
     compilation_out = (
-        f"compilation finished with exit code: {exit_code}\nstderr {stderr}:"
+        f"compilation finished with exit code: {exit_code}\nstderr: {stderr}\n"
     )
 
-    print("compilation finished")
+    width = shutil.get_terminal_size().columns
+    print("=" * width)
+    print("COMPILATION FINISHED")
+
     return {**state, "exit_code": exit_code, "compilation_out": compilation_out}
 
 
@@ -114,13 +156,16 @@ def validate_wrapper(state: AgentState):
     test_cases = state["test_cases"]
     validation_out, accuracy = validate(test_cases)
 
-    print("validation finished")
+    width = shutil.get_terminal_size().columns
+    print("=" * width)
+    print("VALIDATION FINISHED")
+
     return {**state, "validation_out": validation_out, "test_accuracy": accuracy}
 
 
 def pass_validation(state: AgentState):
     accuracy = state["test_accuracy"]
-    if accuracy > 0.8:
+    if accuracy >= 1:
         return "end"
     else:
         return "try_again"
