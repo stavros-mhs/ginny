@@ -84,7 +84,7 @@ def iterate():
     img = graph.get_graph().draw_mermaid_png()
     with open("graph.png", "wb") as f:
         f.write(img)
-        print("Graph written to graph.png")
+        # print("Graph written to graph.png")
     return graph
 
 
