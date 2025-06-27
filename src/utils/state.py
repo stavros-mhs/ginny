@@ -3,8 +3,8 @@ from langchain_core.messages import BaseMessage
 from langgraph.graph import add_messages
 
 
-class AgentState (TypedDict):
-    messages: Annotated [Sequence [BaseMessage], add_messages]
+class AgentState(TypedDict):
+    messages: Annotated[Sequence[BaseMessage], add_messages]
     extracted_text: str
     test_cases: dict
     assignment_summary: str
