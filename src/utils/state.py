@@ -8,5 +8,7 @@ class AgentState (TypedDict):
     extracted_text: str
     test_cases: dict
     assignment_summary: str
+    compilation_out: str
+    exit_code: int
     test_accuracy: int
     validation_out: str
