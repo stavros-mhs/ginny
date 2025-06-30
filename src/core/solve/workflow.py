@@ -6,6 +6,7 @@ from src.utils.config import GraphConfig
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 from langchain_community.tools import ReadFileTool, WriteFileTool
+from langchain_community.callbacks.openai_info import OpenAICallbackHandler
 
 from langgraph.checkpoint.memory import MemorySaver
 from functools import partial
@@ -26,13 +27,13 @@ from src.core.solve.node_logic import (
 )
 from src.core.solve.sys_prompts import IMPLEMENTER_SYSTEM_PROMPT, NEUROSYM_DEFAULT_MODEL
 
-
 def iterate():
     workflow = StateGraph(AgentState, GraphConfig)
 
     # defining implementer agent and toolbox
+    token_logger = OpenAICallbackHandler() # keep track of token usage
     toolbox = [ReadFileTool(verbose=True), WriteFileTool(verbose=True)]
-    implementer = ChatOpenAI(temperature=0.8, model=NEUROSYM_DEFAULT_MODEL)
+    implementer = ChatOpenAI(temperature=0.8, model=NEUROSYM_DEFAULT_MODEL, callbacks=[token_logger])
     implementer = implementer.bind_tools(toolbox)
     impl_toolnode = ToolNode(toolbox)
 
@@ -44,7 +45,7 @@ def iterate():
 
     workflow.add_node(
         "implementer",
-        partial(call_model, model=implementer, prompt=IMPLEMENTER_SYSTEM_PROMPT),
+        partial(call_model, model=implementer, prompt=IMPLEMENTER_SYSTEM_PROMPT, token_logger=token_logger),
     )
     workflow.add_node("impl_action", impl_toolnode)
 
@@ -88,7 +89,7 @@ def iterate():
     return graph
 
 
-def execute(program, user_in: str) -> str:
+def execute(program, user_in: str, accuracy: float) -> str:
     initial_state = {
         "messages": [HumanMessage(content=user_in)],
         "extracted_text": "",
@@ -96,7 +97,8 @@ def execute(program, user_in: str) -> str:
         "assignment_summary": "",
         "compilation_out": "",
         "exit_code": -1,
-        "test_accuracy": -1,
+        "test_accuracy": 0.0,
+        "accuracy_threshold": accuracy,
         "validation_out": "",
     }
     final_state = program.invoke(
