@@ -31,6 +31,12 @@ def main():
         help="attempts to implement a solution according to the requirments given",
     )
     solve_parser.add_argument("pdf_path", help="path to requirments pdf")
+    solve_parser.add_argument (
+        "--acc",
+        type=float,
+        default=0.9,
+        help="accuracy threshold (float must be between 0.0 and 1.0)"
+        )
 
     args = parser.parse_args()
 
@@ -41,7 +47,9 @@ def main():
     elif args.command == "validate":
         run_val(args.pdf_path)
     elif args.command == "solve":
-        run_solve(args.pdf_path)
+        if not 0.0 <= args.acc <= 1.0:
+            parser.error ("--acc must be between 0.0 and 1.0")
+        run_solve(args.pdf_path, args.acc)
     else:
         print("unknown command given")
 

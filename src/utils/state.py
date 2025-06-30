@@ -10,5 +10,6 @@ class AgentState(TypedDict):
     assignment_summary: str
     compilation_out: str
     exit_code: int
-    test_accuracy: int
+    accuracy_threshold: float
+    test_accuracy: float #TODO name this to something better
     validation_out: str
