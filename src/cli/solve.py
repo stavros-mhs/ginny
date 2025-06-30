@@ -3,6 +3,6 @@ from src.utils.tools.read_pdf_tool import ReadPDFTool
 from langchain_community.tools import WriteFileTool
 
 
-def run_solve(pdf_path):
+def run_solve(pdf_path, accuracy):
     program = iterate()
-    result = execute(program, pdf_path)
+    result = execute(program, pdf_path, accuracy)
