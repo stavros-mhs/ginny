@@ -1,10 +1,9 @@
-import shutil
-
 from src.utils.state import AgentState
 from src.utils.pdf_to_str import pdftostr
 from src.utils.extract_tests import extract_test_cases
 from src.utils.validate import validate
 from src.utils.compile import comp
+from src.utils.pretty_print import beautify
 
 from langchain_openai import ChatOpenAI
 from src.core.solve.sys_prompts import SUMMARIZER_SYSTEM_PROMPT, NEUROSYM_DEFAULT_MODEL
@@ -31,11 +30,9 @@ def call_model(state, config, model, prompt, token_logger):
     messages = [SystemMessage(prompt)] + messages
     response = model.invoke(messages)
 
-    width = shutil.get_terminal_size().columns
-    print("=" * width)
-    
+    beautify ()
     print(f"Tokens Used: {token_logger.total_tokens}\n")
-    print(f"Successful Requests: {token_logger.successful_requests}\n")
+    # print(f"Successful Requests: {token_logger.successful_requests}\n")
     print(f"Total Cost (USD): {token_logger.total_cost:.6f}\n\n")
 
     return {
@@ -48,20 +45,14 @@ def call_model(state, config, model, prompt, token_logger):
 def pdftostr_wrapper(state: AgentState):
     extracted = pdftostr(state["messages"][-1].content)
 
-    width = shutil.get_terminal_size().columns
-    print("=" * width)
-    print("PDF TO STRING CONVERSION FINISHED")
-
+    beautify ("PDF TO STRING CONVERSION FINISHED")
     return {**state, "extracted_text": extracted}
 
 
 def extract_test_cases_wrapper(state: AgentState):
     test_cases = extract_test_cases(state["extracted_text"])
 
-    width = shutil.get_terminal_size().columns
-    print("=" * width)
-    print("TEST CASE EXTRACTION FINISHED")
-
+    beautify ("TEST CASE EXTRACTION FINISHED")
     return {**state, "test_cases": test_cases}
 
 
@@ -76,10 +67,7 @@ def get_summary(state: AgentState):
 
     response = summarizer.invoke(messages)
 
-    width = shutil.get_terminal_size().columns
-    print("=" * width)
-    print("SUMMARIZING FINISHED")
-
+    beautify ("SUMMARIZING FINISHED")
     return {**state, "assignment_summary": response.content}
 
 
@@ -128,10 +116,8 @@ def create_prompt(state: AgentState):
             + validation_out
         )
 
-    width = shutil.get_terminal_size().columns
-    print("=" * width)
-    print(f"PROMT MADE:\n{prompt}")
-
+    beautify ("PROMT MADE")
+    print (prompt)
     new_message = state["messages"] + [HumanMessage(content=prompt)]
     return {**state, "messages": new_message}
 
@@ -143,18 +129,16 @@ def compilation_wrapper(state: AgentState):
         f"compilation finished with exit code: {exit_code}\nstderr: {stderr}\n"
     )
 
-    width = shutil.get_terminal_size().columns
-    print("=" * width)
-    print("COMPILATION FINISHED")
-
     return {**state, "exit_code": exit_code, "compilation_out": compilation_out}
 
 
 def pass_compilation(state: AgentState):
     exit_code = state["exit_code"]
     if not exit_code:
+        beautify ("COMPILATION SUCCESSFUL")
         return "continue"
     else:
+        beautify ("COMPILATION FAILED")
         return "retry"
 
 
@@ -163,10 +147,6 @@ def validate_wrapper(state: AgentState):
     test_cases = state["test_cases"]
     validation_out, accuracy = validate(test_cases)
 
-    width = shutil.get_terminal_size().columns
-    print("=" * width)
-    print("VALIDATION FINISHED")
-
     return {**state, "validation_out": validation_out, "test_accuracy": accuracy}
 
 
@@ -174,6 +154,8 @@ def pass_validation(state: AgentState):
     accuracy = state["test_accuracy"]
     accuracy_threshold = state ["accuracy_threshold"]
     if accuracy >= accuracy_threshold:
+        beautify ("VALIDATION SUCCESFUL")
         return "end"
     else:
+        beautify ("VALIDATION FAILED")
         return "try_again"
