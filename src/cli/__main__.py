@@ -37,6 +37,18 @@ def main():
         default=0.9,
         help="accuracy threshold (float must be between 0.0 and 1.0)"
         )
+    solve_parser.add_argument (
+        "--model",
+        type=str,
+        default="gpt-4o-mini",
+        help="the model of you choice to implement the software. defaults to gpt-4o-mini."
+        )
+    solve_parser.add_argument (
+        "--iter",
+        type=int,
+        default=10,
+        help="most times the implementation can fail before giving up."
+    )
 
     args = parser.parse_args()
 
@@ -49,7 +61,7 @@ def main():
     elif args.command == "solve":
         if not 0.0 <= args.acc <= 1.0:
             parser.error ("--acc must be between 0.0 and 1.0")
-        run_solve(args.pdf_path, args.acc)
+        run_solve(args.pdf_path, args.acc, args.model, args.iter)
     else:
         print("unknown command given")
 
