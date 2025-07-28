@@ -4,3 +4,4 @@ venv/
 *.txt
 *.c
 local_tests/
+graph.png
