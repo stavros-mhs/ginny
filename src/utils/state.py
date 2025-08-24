@@ -1,3 +1,4 @@
+from src.core.solve.agent_logic.custom_types.ctypes import CompilationCMD, TestCaseList
 from typing import TypedDict, Annotated, Sequence
 from langchain_core.messages import BaseMessage
 from langgraph.graph import add_messages
@@ -10,14 +11,9 @@ class AgentState(TypedDict):
     current: int # how many tries have been attempted so far
 
     extracted_text: str # text from pdf given
-    test_cases: dict # test cases extracted from pdf in the form of key value pairs <cmd, expected_out>
     assignment_summary: str # assignment synopsis to be passed to implementer agent
-
-    # compilation details
-    compiler_choice: str
-    flags: str
-    source_file_name: str
-    binary_file_name: str
+    comp_cmd: CompilationCMD # comp_cmd is of Type List [str]
+    test_cases: TestCaseList # test_cases_list is of Type List[TestCase]
 
     # details about compilation
     compilation_out: str
