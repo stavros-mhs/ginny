@@ -5,14 +5,18 @@ from src.utils.pretty_print import beautify
 
 def get_comp_cmd_wrapper (state: AgentState, model, token_logger):
     
-    assignment_summary = state ["assignment_summary"]
+    text = state ["extracted_text"]
     agent = build_agent (model=model, token_logger=token_logger)
     chain = cast_chain (llm=agent, type=CompilationCMD)
 
-    chain_out = chain.invoke ({"data": assignment_summary, "type": CompilationCMD})
+    chain_out = chain.invoke ({"data": text, "type": CompilationCMD})
     comp_cmd = chain_out[0].compilation_cmd # unwrap
 
     beautify ("COMPILATION COMMAND RETRIEVED")
+
+    print ("\n")
+    print (comp_cmd)
+    print ("\n")
 
     return {
         **state,
