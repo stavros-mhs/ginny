@@ -21,9 +21,6 @@ from src.core.solve.auto_logic.generics import (
 
 from src.core.solve.auto_logic.preprocessing import (
     pdftostr_wrapper,
-    extract_test_cases_wrapper,
-    get_compilation_cmd,
-    prepend_wd,
     set_up_wd
 )
 
@@ -39,7 +36,7 @@ from src.core.solve.auto_logic.compilation import (
 )
 
 from src.core.solve.auto_logic.validation import (
-    validate_wrapper,
+    validate,
     pass_validation
 )
 
@@ -48,50 +45,68 @@ from src.core.solve.auto_logic.cleanup import cleanup
 from src.core.solve.auto_logic.prompt import create_prompt
 
 from src.core.solve.agent_logic.summarizer.summarizer import get_summary
+from src.core.solve.agent_logic.get_comp.get_comp import get_comp_cmd_wrapper
+from src.core.solve.agent_logic.get_tests.get_tests import get_tests_wrapper
+from src.core.solve.agent_logic.implementer.implementer import implementer_wrapper
 
 def iterate(model):
     workflow = StateGraph(AgentState, GraphConfig)
 
     # defining implementer agent and toolbox
-    token_logger = OpenAICallbackHandler() # keep track of token usage
-    toolbox = [ReadFileTool(root_dir="working_dir", verbose=True), WriteFileTool(root_dir="working_dir", verbose=True)]
-    # toolbox = [ReadFileTool(root_dir="working_dir"), WriteFileTool(root_dir="working_dir")]
-    implementer = ChatOpenAI(temperature=0.8, model=model, timeout=10, callbacks=[token_logger])
-    implementer = implementer.bind_tools(toolbox)
+    token_logger = OpenAICallbackHandler() # init token logger to keep track of token usage
+    
+    toolbox = [
+        ReadFileTool(root_dir="working_dir", verbose=True),
+        WriteFileTool(root_dir="working_dir", verbose=True)
+    ]
+    implementer = implementer_wrapper (model=model, token_logger=token_logger)
     impl_toolnode = ToolNode(toolbox)
 
     # node definitions
     workflow.add_node("pdf_to_str", pdftostr_wrapper)
-    workflow.add_node("extract_tests", extract_test_cases_wrapper)
-    workflow.add_node ("get_compilation_cmd", get_compilation_cmd)
-    workflow.add_node ("prepend_wd", prepend_wd)
+
+    workflow.add_node(
+        "extract_tests",
+        partial (get_tests_wrapper, model=model, token_logger=token_logger)
+        )
+    
+    workflow.add_node (
+        "get_compilation_cmd",
+        partial (get_comp_cmd_wrapper, model=model, token_logger=token_logger)
+        )
+    
     workflow.add_node ("set_up_wd", set_up_wd)
     workflow.add_node ("save_in_between", save_in_between)
     workflow.add_node ("increment_state", increment_state)
-    workflow.add_node("summarizer", partial (get_summary, token_logger=token_logger))
-    workflow.add_node("create_prompt", create_prompt)
 
+    workflow.add_node(
+        "summarizer",
+        partial (get_summary, model=model, token_logger=token_logger)
+        )
+    
+    workflow.add_node("create_prompt", create_prompt)
+    #? redundant token logger usage?
     workflow.add_node(
         "implementer",
         partial(call_model, model=implementer, prompt=IMPLEMENTER_SYSTEM_PROMPT, token_logger=token_logger),
     )
     workflow.add_node("impl_action", impl_toolnode)
 
-    workflow.add_node("compilation", compilation_wrapper)
-    workflow.add_node("validation", validate_wrapper)
+    workflow.add_node ("compilation", compilation_wrapper)
+    workflow.add_node("validation", validate)
     workflow.add_node ("cleanup", cleanup)
 
     # set graph's entry point
     workflow.set_entry_point("pdf_to_str")
 
     # define graph's edges
-    workflow.add_edge("pdf_to_str", "extract_tests")
-    workflow.add_edge ("extract_tests", "get_compilation_cmd")
-    workflow.add_edge ("get_compilation_cmd", "summarizer")
-    workflow.add_edge ("summarizer", "set_up_wd")
-    workflow.add_edge ("set_up_wd", "prepend_wd")
-    workflow.add_edge ("prepend_wd", "increment_state")
+    workflow.add_edge("pdf_to_str", "summarizer") # user_in.pdf --> summarizes user_in.pdf to a string
+    workflow.add_edge ("summarizer", "get_compilation_cmd") # retrieve from summary the  how the source file should be compiled
+    workflow.add_edge ("get_compilation_cmd", "extract_tests") # retrieve from the summary the test cases
+    workflow.add_edge ("extract_tests", "set_up_wd") # create working_dir
+    workflow.add_edge ("set_up_wd", "increment_state") # start tracking attempts
 
+    # if attempt limit reached, end
     workflow.add_conditional_edges (
         "increment_state",
         check_limit,
@@ -104,14 +119,14 @@ def iterate(model):
     workflow.add_conditional_edges(
         "implementer",
         should_continue,
-        {"continue": "impl_action", "end": "compilation"},
+        {"continue": "impl_action", "end": "compilation"}, # if no tool was used, proceed to compilation
     )
-    workflow.add_edge("impl_action", "implementer")
+    workflow.add_edge("impl_action", "implementer") # if some tool was used, go to agent
 
     workflow.add_conditional_edges(
         "compilation",
         pass_compilation,
-        {"continue": "validation", "retry": "increment_state"},
+        {"continue": "validation", "retry": "increment_state"}, # if compilation was succefull, go to validation, else retry
     )
     workflow.add_conditional_edges(
         "validation", pass_validation, {"end": "cleanup", "try_again": "increment_state"}
@@ -123,10 +138,11 @@ def iterate(model):
     checkpointer = MemorySaver()
     # compile graph
     graph = workflow.compile(checkpointer=checkpointer)
+    
     # illustrate graph for debugging
-    img = graph.get_graph().draw_mermaid_png()
-    with open("graph.png", "wb") as f:
-        f.write(img)
+    # img = graph.get_graph().draw_mermaid_png()
+    # with open("graph.png", "wb") as f:
+        # f.write(img)
         # print("Graph written to graph.png")
     return graph
 
@@ -137,15 +153,16 @@ def execute(program, user_in: str, accuracy: float, iter: int) -> str:
         "iter": iter,
         "current": 0,
         "extracted_text": "",
-        "test_cases": {},
         "assignment_summary": "",
-        "compilation_command": "",
-        "compilation_out": "",
+        "comp_cmd": "",
+        "test_cases": [],
+        "compilation_out": [],
         "exit_code": -1,
         "accuracy_threshold": accuracy,
         "test_accuracy": 0.0,
         "validation_out": "",
     }
+
     final_state = program.invoke(
         initial_state,
         config={"configurable": {"thread_id": 24}, "recursion_limit": 100},
