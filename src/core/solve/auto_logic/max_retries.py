@@ -23,8 +23,6 @@ def check_limit (state: AgentState):
         return "continue"
     
 # SAVE IN BETWEEN IMPLEMENTATIONS
-#TODO maybe instead of snapshots we can have project_name/snapshots/rounds_/
-#TODO example "collatz/snapshots/rounds_"
 def save_in_between (state: AgentState):
     src = "working_dir"
     
