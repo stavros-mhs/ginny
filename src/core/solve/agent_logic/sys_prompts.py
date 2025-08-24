@@ -1,4 +1,7 @@
 import os
+from langchain_community.callbacks.openai_info import OpenAICallbackHandler
+
+TOKEN_LOGGER = OpenAICallbackHandler ()
 
 # this can probs be improved
 SUMMARIZER_SYSTEM_PROMPT = os.environ.get(
