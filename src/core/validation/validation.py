@@ -1,10 +1,5 @@
-import sys
 import shlex
 import subprocess
-
-#from src.utils.pdf_to_json import pdftojson
-#from src.utils.extract_tests import extract_test_cases
-
 
 def validate(test_cases: dict):
     passed = 0
@@ -30,11 +25,3 @@ def validate(test_cases: dict):
 
     logs.close()
     return passed / len(test_cases)
-
-
-#if __name__ == "__main__":
-#    pdf_path = sys.argv[1]
-#    jsonify_pdf = pdftojson(pdf_path)
-#    test_cases = extract_test_cases(jsonify_pdf)
-#
-#    validate(test_cases)
