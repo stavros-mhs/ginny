@@ -105,15 +105,15 @@ def iterate(model):
     workflow.add_edge ("get_compilation_cmd", "extract_tests") # retrieve from the summary the test cases
     workflow.add_edge ("extract_tests", "set_up_wd") # create working_dir
     workflow.add_edge ("set_up_wd", "increment_state") # start tracking attempts
+    workflow.add_edge ("save_in_between", "increment_state")
 
     # if attempt limit reached, end
     workflow.add_conditional_edges (
         "increment_state",
         check_limit,
-        {"end": "cleanup", "continue": "save_in_between"}
+        {"end": "cleanup", "continue": "create_prompt"}
     )
 
-    workflow.add_edge("save_in_between", "create_prompt")
     workflow.add_edge ("create_prompt", "implementer")
 
     workflow.add_conditional_edges(
@@ -126,10 +126,10 @@ def iterate(model):
     workflow.add_conditional_edges(
         "compilation",
         pass_compilation,
-        {"continue": "validation", "retry": "increment_state"}, # if compilation was succefull, go to validation, else retry
+        {"continue": "validation", "retry": "save_in_between"}, # if compilation was succefull, go to validation, else retry
     )
     workflow.add_conditional_edges(
-        "validation", pass_validation, {"end": "cleanup", "try_again": "increment_state"}
+        "validation", pass_validation, {"end": "cleanup", "try_again": "save_in_between"}
     )
 
     workflow.add_edge ("cleanup", END)
@@ -140,10 +140,10 @@ def iterate(model):
     graph = workflow.compile(checkpointer=checkpointer)
     
     # illustrate graph for debugging
-    # img = graph.get_graph().draw_mermaid_png()
-    # with open("graph.png", "wb") as f:
-        # f.write(img)
-        # print("Graph written to graph.png")
+    img = graph.get_graph().draw_mermaid_png()
+    with open("graph.png", "wb") as f:
+        f.write(img)
+        print("Graph written to graph.png")
     return graph
 
 
