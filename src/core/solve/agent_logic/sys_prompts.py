@@ -23,7 +23,8 @@ SUMMARIZER_SYSTEM_PROMPT = os.environ.get(
 IMPLEMENTER_SYSTEM_PROMPT = os.environ.get(
     "IMPLEMENTER_SYSTEM_PROMPT",
     """You're a LLM agent node in a workflow meant to implement software for the task provided.
-                                _Provide code_. You'll be given tools to write code and read what you wrote to make corrections. 
+                                _Provide code_. You'll be given tools to write code and read what you wrote to make corrections.
+                                Additionally you're given a tool that allows you to list the contents of directories.
                                 Your code will be given to a validator who will automatically test what you wrote and 
                                 if any test case returns an error you'll be required to re-write the implementation.
                                 Make sure any inputs expected will be given via argv. _Not_ scanf.
