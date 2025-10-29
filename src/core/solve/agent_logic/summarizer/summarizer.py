@@ -8,7 +8,7 @@ from src.core.solve.agent_logic.generics import build_agent
 
 def get_summary(state: AgentState, model, token_logger):
     extracted = state["extracted_text"]
-    summarizer = build_agent (temperature=0.5, model=model, token_logger=token_logger)
+    summarizer = build_agent (APItimeout=state ["APItimeout"], temperature=0.5, model=model, token_logger=token_logger)
 
     messages = [
         SystemMessage(content=SUMMARIZER_SYSTEM_PROMPT),

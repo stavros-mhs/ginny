@@ -47,7 +47,24 @@ def main():
         "--iter",
         type=int,
         default=10,
-        help="most times the implementation can fail before giving up."
+        help="most times the implementation can fail before giving up\ndefault value is 10"
+    )
+    solve_parser.add_argument (
+        "--APItimeout",
+        type=int,
+        default=500,
+        help="time (in seconds) to wait for response from model's API\ndefault value is 500"
+    )
+    solve_parser.add_argument (
+        "--SubprocessTimeout",
+        type=int,
+        default=30,
+        help="""time (in seconds) the LLMs code is allowed to run before stopping\n
+                default value is 30
+                \n
+                \n
+                NOTE: depending on the assignment at hand, the code may need to run for more than 30 seconds!
+                """
     )
 
     args = parser.parse_args()
@@ -61,7 +78,11 @@ def main():
     elif args.command == "solve":
         if not 0.0 <= args.acc <= 1.0:
             parser.error ("--acc must be between 0.0 and 1.0")
-        run_solve(args.pdf_path, args.acc, args.model, args.iter)
+        if 10 > args.APItimeout:
+            parser.error ("--APItimeout must be at least 10")
+        if 10 > args.SubprocessTimeout:
+            parser.error ("--SubprocessTimeout must be at least 10")
+        run_solve(args.pdf_path, args.acc, args.model, args.iter, args.APItimeout, args.SubprocessTimeout)
     else:
         print("unknown command given")
 

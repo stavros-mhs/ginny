@@ -7,6 +7,9 @@ from langgraph.graph import add_messages
 class AgentState(TypedDict):
     messages: Annotated[Sequence[BaseMessage], add_messages] # chat message history
     
+    APItimeout: int # time (in seconds) to wait for LLM response
+    SubprocessTimeout: int # time (in seconds) to run LLM's code
+
     iter: int # max amount of implementation retries
     current: int # how many tries have been attempted so far
 

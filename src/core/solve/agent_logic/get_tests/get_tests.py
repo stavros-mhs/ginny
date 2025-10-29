@@ -5,7 +5,7 @@ from src.utils.pretty_print import beautify
 
 def get_tests_wrapper (state: AgentState, model, token_logger):
     text = state ["extracted_text"]
-    agent = build_agent (model=model, token_logger=token_logger)
+    agent = build_agent (APItimeout=state ["APItimeout"], model=model, token_logger=token_logger)
     chain = cast_chain (llm=agent, type=TestCaseList)
 
     chain_out = chain.invoke ({"data": text, "type": TestCaseList})

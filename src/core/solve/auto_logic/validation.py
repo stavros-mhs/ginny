@@ -17,6 +17,7 @@ def validate (state: AgentState):
     os.chdir ("working_dir")
 
     test_cases = state ["test_cases"]
+    SubprocessTimeout = state ["SubprocessTimeout"]
 
     passed = 0
     log_stream = io.StringIO ()
@@ -29,7 +30,7 @@ def validate (state: AgentState):
         log_stream.write (f"expecting: <{exp_out}> -- ")    
 
         try:
-            result = subprocess.run (cmd, capture_output=True, text=True, timeout=10)
+            result = subprocess.run (cmd, capture_output=True, text=True, timeout=SubprocessTimeout)
             stdout = result.stdout.strip ()
             stderr = result.stderr.strip ()
 

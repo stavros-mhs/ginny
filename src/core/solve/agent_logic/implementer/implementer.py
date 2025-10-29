@@ -4,8 +4,9 @@ from src.core.solve.agent_logic.generics import build_agent
 
 from langchain_community.tools import ReadFileTool, WriteFileTool, ListDirectoryTool
 
-def implementer_wrapper (model, token_logger):
+def implementer_wrapper (model, token_logger, APItimeout):
     implementer = build_agent (
+        APItimeout=APItimeout,
         temperature=0.8,
         model=model,
         token_logger=token_logger

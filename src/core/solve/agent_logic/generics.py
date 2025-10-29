@@ -6,9 +6,11 @@ from langchain_core.prompts import (ChatPromptTemplate,
                                     SystemMessagePromptTemplate,
                                     HumanMessagePromptTemplate)
 from langchain_core.output_parsers import PydanticToolsParser
+
 from langchain_openai import ChatOpenAI
 
 def build_agent(
+        APItimeout: int,
         temperature: float = 0.0,
         model: str = NEUROSYM_DEFAULT_MODEL,
         token_logger = TOKEN_LOGGER
@@ -16,7 +18,7 @@ def build_agent(
     
     """Single function to build agents"""
     agent = ChatOpenAI(
-        temperature=temperature, model=model, timeout=10, callbacks=[token_logger]
+        temperature=temperature, model=model, timeout=APItimeout, callbacks=[token_logger]
     )
 
     return agent
