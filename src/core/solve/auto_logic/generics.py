@@ -15,15 +15,15 @@ def should_continue(state: AgentState):
         return "continue"
 
 
-def call_model(state, config, model, prompt, token_logger):
+def call_model(state, config, model, prompt):
     messages = state["messages"]
     messages = [SystemMessage(prompt)] + messages
     response = model.invoke(messages)
 
     beautify ()
-    print(f"Tokens Used: {token_logger.total_tokens}\n")
+    # print(f"Tokens Used: {token_logger.total_tokens}\n")
     # print(f"Successful Requests: {token_logger.successful_requests}\n")
-    print(f"Total Cost (USD): {token_logger.total_cost:.6f}\n\n")
+    # print(f"Total Cost (USD): {token_logger.total_cost:.6f}\n\n")
 
     return {
         **state,
