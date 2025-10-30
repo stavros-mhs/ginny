@@ -46,7 +46,7 @@ def validate (state: AgentState):
         except subprocess.TimeoutExpired:
             log_stream.write (f"\n[FAIL]: {cmd} -- ")
             log_stream.write (
-                "<subprocess.TimeoutExpired> - test case runs for 10 seconds and time limit got exceeded\n"
+                f"<subprocess.TimeoutExpired> - test case runs for {SubprocessTimeout} seconds and time limit got exceeded\n"
             )
     
     validation_out = log_stream.getvalue ()
