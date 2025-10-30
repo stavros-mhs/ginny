@@ -6,7 +6,7 @@ from src.utils.config import GraphConfig
 from langgraph.graph import StateGraph, END
 from langgraph.prebuilt import ToolNode
 from langchain_community.tools import ReadFileTool, WriteFileTool, ListDirectoryTool
-from langchain_community.callbacks.openai_info import OpenAICallbackHandler
+# from langchain_community.callbacks.openai_info import OpenAICallbackHandler
 
 from langgraph.checkpoint.memory import MemorySaver
 from functools import partial
@@ -53,14 +53,14 @@ def iterate (model, APItimeout):
     workflow = StateGraph(AgentState, GraphConfig)
 
     # defining implementer agent and toolbox
-    token_logger = OpenAICallbackHandler() # init token logger to keep track of token usage
+    # token_logger = OpenAICallbackHandler() # init token logger to keep track of token usage
     
     toolbox = [
         ReadFileTool(root_dir="working_dir", verbose=True),
         WriteFileTool(root_dir="working_dir", verbose=True),
         ListDirectoryTool (root_dir="working_dir", verbose=True)
     ]
-    implementer = implementer_wrapper (model=model, token_logger=token_logger, APItimeout=APItimeout) 
+    implementer = implementer_wrapper (model=model, APItimeout=APItimeout) 
     impl_toolnode = ToolNode(toolbox)
 
     # node definitions
@@ -68,12 +68,12 @@ def iterate (model, APItimeout):
 
     workflow.add_node(
         "extract_tests",
-        partial (get_tests_wrapper, model=model, token_logger=token_logger)
+        partial (get_tests_wrapper, model=model)
         )
     
     workflow.add_node (
         "get_compilation_cmd",
-        partial (get_comp_cmd_wrapper, model=model, token_logger=token_logger)
+        partial (get_comp_cmd_wrapper, model=model)
         )
     
     workflow.add_node ("set_up_wd", set_up_wd)
@@ -82,14 +82,14 @@ def iterate (model, APItimeout):
 
     workflow.add_node(
         "summarizer",
-        partial (get_summary, model=model, token_logger=token_logger)
+        partial (get_summary, model=model)
         )
     
     workflow.add_node("create_prompt", create_prompt)
     #? redundant token logger usage?
     workflow.add_node(
         "implementer",
-        partial(call_model, model=implementer, prompt=IMPLEMENTER_SYSTEM_PROMPT, token_logger=token_logger),
+        partial(call_model, model=implementer, prompt=IMPLEMENTER_SYSTEM_PROMPT),
     )
     workflow.add_node("impl_action", impl_toolnode)
 

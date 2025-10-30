@@ -6,9 +6,11 @@ from src.core.solve.agent_logic.sys_prompts import SUMMARIZER_SYSTEM_PROMPT
 from src.utils.pretty_print import beautify
 from src.core.solve.agent_logic.generics import build_agent
 
-def get_summary(state: AgentState, model, token_logger):
+def get_summary(state: AgentState, model):
     extracted = state["extracted_text"]
-    summarizer = build_agent (APItimeout=state ["APItimeout"], temperature=0.5, model=model, token_logger=token_logger)
+    APItimeout = state ["APItimeout"]
+
+    summarizer = build_agent (model_name=model, APItimeout=APItimeout, temperature=0.5)
 
     messages = [
         SystemMessage(content=SUMMARIZER_SYSTEM_PROMPT),
