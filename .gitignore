@@ -1,7 +1,7 @@
+artifacts/
 venv/
 **/__pycache__/
 *.py[cod]
 *.txt
 *.c
-local_tests/
 graph.png
