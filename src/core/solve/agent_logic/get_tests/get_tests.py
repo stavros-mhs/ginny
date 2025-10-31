@@ -16,14 +16,15 @@ def get_tests_wrapper (state: AgentState, model):
     #print (f"type of unwrapped chain: {type (unwrapped_chain)}")
 
     test_cases_list = unwrapped_chain.test_case_list
-    
+
+    beautify ("TEST CASES RETRIEVED")
+
     print ("\n")
     print (test_cases_list)
     print ("\n")
     
     test_cases_to_dict = [tc.dict () for tc in test_cases_list]
 
-    beautify ("TEST CASES RETRIEVED")
     return {
         **state,
         "test_cases": test_cases_to_dict
