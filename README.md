@@ -72,7 +72,7 @@ Ginny is given inputs in the form of PDF files. The input should contain:
 The most important parameter is `--acc=desired_accuracy`. Accuracy is defined as:
 
 $$
-\frac{\text {\# of tests passed}}{\text {\# of tests}}
+\frac{\text {no. of tests passed}}{\text {no. of tests}}
 $$
 
 Accuracy is a float number. By default, accuracy is set to 1, meaning all test cases must pass for an implemetation to pass. If you want to be less austere you can lower it to some other fraction but - keep in mind that an implementation that passed with `acc < 1` will most likely fail on some test cases!
