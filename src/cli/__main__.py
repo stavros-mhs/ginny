@@ -34,7 +34,7 @@ def main():
     solve_parser.add_argument (
         "--acc",
         type=float,
-        default=0.9,
+        default=1.0,
         help="accuracy threshold (float must be between 0.0 and 1.0)"
         )
     solve_parser.add_argument (
