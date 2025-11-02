@@ -1,6 +1,7 @@
-from src.utils.state import AgentState
 from langchain_core.messages import SystemMessage
 from src.utils.pretty_print import beautify
+from src.utils.state import AgentState
+
 
 def should_continue(state: AgentState):
     messages = state["messages"]
@@ -20,7 +21,7 @@ def call_model(state, config, model, prompt):
     messages = [SystemMessage(prompt)] + messages
     response = model.invoke(messages)
 
-    beautify ()
+    beautify()
     # print(f"Tokens Used: {token_logger.total_tokens}\n")
     # print(f"Successful Requests: {token_logger.successful_requests}\n")
     # print(f"Total Cost (USD): {token_logger.total_cost:.6f}\n\n")

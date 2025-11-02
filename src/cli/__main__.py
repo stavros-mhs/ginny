@@ -1,9 +1,9 @@
 import argparse
 
-from src.cli.summarize import run_goal
 from src.cli.implement import run_impl
-from src.cli.validate import run_val
 from src.cli.solve import run_solve
+from src.cli.summarize import run_goal
+from src.cli.validate import run_val
 
 
 def main():
@@ -31,31 +31,31 @@ def main():
         help="attempts to implement a solution according to the requirments given",
     )
     solve_parser.add_argument("pdf_path", help="path to requirments pdf")
-    solve_parser.add_argument (
+    solve_parser.add_argument(
         "--acc",
         type=float,
         default=1.0,
-        help="accuracy threshold (float must be between 0.0 and 1.0)"
-        )
-    solve_parser.add_argument (
+        help="accuracy threshold (float must be between 0.0 and 1.0)",
+    )
+    solve_parser.add_argument(
         "--model",
         type=str,
         default="gpt-4o-mini",
-        help="the model of you choice to implement the software. defaults to gpt-4o-mini."
-        )
-    solve_parser.add_argument (
+        help="the model of you choice to implement the software. defaults to gpt-4o-mini.",
+    )
+    solve_parser.add_argument(
         "--iter",
         type=int,
         default=10,
-        help="most times the implementation can fail before giving up\ndefault value is 10"
+        help="most times the implementation can fail before giving up\ndefault value is 10",
     )
-    solve_parser.add_argument (
+    solve_parser.add_argument(
         "--APItimeout",
         type=int,
         default=500,
-        help="time (in seconds) to wait for response from model's API\ndefault value is 500"
+        help="time (in seconds) to wait for response from model's API\ndefault value is 500",
     )
-    solve_parser.add_argument (
+    solve_parser.add_argument(
         "--SubprocessTimeout",
         type=int,
         default=30,
@@ -64,7 +64,7 @@ def main():
                 \n
                 \n
                 NOTE: depending on the assignment at hand, the code may need to run for more than 30 seconds!
-                """
+                """,
     )
 
     args = parser.parse_args()
@@ -77,12 +77,19 @@ def main():
         run_val(args.pdf_path)
     elif args.command == "solve":
         if not 0.0 <= args.acc <= 1.0:
-            parser.error ("--acc must be between 0.0 and 1.0")
+            parser.error("--acc must be between 0.0 and 1.0")
         if 10 > args.APItimeout:
-            parser.error ("--APItimeout must be at least 10")
+            parser.error("--APItimeout must be at least 10")
         if 10 > args.SubprocessTimeout:
-            parser.error ("--SubprocessTimeout must be at least 10")
-        run_solve(args.pdf_path, args.acc, args.model, args.iter, args.APItimeout, args.SubprocessTimeout)
+            parser.error("--SubprocessTimeout must be at least 10")
+        run_solve(
+            args.pdf_path,
+            args.acc,
+            args.model,
+            args.iter,
+            args.APItimeout,
+            args.SubprocessTimeout,
+        )
     else:
         print("unknown command given")
 

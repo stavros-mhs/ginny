@@ -1,31 +1,29 @@
-from src.utils.state import AgentState
-from src.core.solve.agent_logic.generics import build_agent, cast_chain
 from src.core.solve.agent_logic.custom_types.ctypes import TestCaseList
+from src.core.solve.agent_logic.generics import build_agent, cast_chain
 from src.utils.pretty_print import beautify
+from src.utils.state import AgentState
 
-def get_tests_wrapper (state: AgentState, model):
-    text = state ["extracted_text"]    
-    APItimeout = state ["APItimeout"]
 
-    agent = build_agent (model_name=model, APItimeout=APItimeout)
-    chain = cast_chain (llm=agent, type=TestCaseList)
+def get_tests_wrapper(state: AgentState, model):
+    text = state["extracted_text"]
+    APItimeout = state["APItimeout"]
 
-    chain_out = chain.invoke ({"data": text, "type": TestCaseList})
-    #print (f"type of chain: {type(chain_out)}")
+    agent = build_agent(model_name=model, APItimeout=APItimeout)
+    chain = cast_chain(llm=agent, type=TestCaseList)
+
+    chain_out = chain.invoke({"data": text, "type": TestCaseList})
+    # print (f"type of chain: {type(chain_out)}")
     unwrapped_chain = chain_out[0]
-    #print (f"type of unwrapped chain: {type (unwrapped_chain)}")
+    # print (f"type of unwrapped chain: {type (unwrapped_chain)}")
 
     test_cases_list = unwrapped_chain.test_case_list
 
-    beautify ("TEST CASES RETRIEVED")
+    beautify("TEST CASES RETRIEVED")
 
-    print ("\n")
-    print (test_cases_list)
-    print ("\n")
-    
-    test_cases_to_dict = [tc.dict () for tc in test_cases_list]
+    print("\n")
+    print(test_cases_list)
+    print("\n")
 
-    return {
-        **state,
-        "test_cases": test_cases_to_dict
-    }
+    test_cases_to_dict = [tc.dict() for tc in test_cases_list]
+
+    return {**state, "test_cases": test_cases_to_dict}

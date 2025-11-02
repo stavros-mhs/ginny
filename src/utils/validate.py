@@ -1,6 +1,6 @@
+import io
 import shlex
 import subprocess
-import io
 
 
 def validate(test_cases: dict) -> str:
