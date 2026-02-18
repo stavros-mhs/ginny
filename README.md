@@ -1,6 +1,12 @@
 ## Disclaimer: This is Alpha Software
 Ginny depends on third party software and uses LLMs to generate code that will be run and tested on your terminal! Handle with care. I suggest you run Ginny in a virtual environment ([go to relevant section](#creating-a-virtual-environment))
 
+<p align="center">
+    <img src="./assets/ginny.png" alt="Banner" width="400"/>
+</p>
+
+Art for Ginny by my talented friend Filomila. You can find more of her work [here](https://www.instagram.com/highltdtattoo/).
+
 ## Introducing Ginny!
 Ginny is a CLI tool that automates the following workflow:
 ```mermaid
