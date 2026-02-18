@@ -1,10 +1,12 @@
 from typing import List
+
 from pydantic import BaseModel, Field
 
-class CompilationCMD (BaseModel):
+
+class CompilationCMD(BaseModel):
     """String that represents a shell command to compile some source code to a binary executable"""
 
-    compilation_cmd: List [str] = Field (
+    compilation_cmd: List[str] = Field(
         ...,
         description="""
         A list of strings representing a full compilation command, tokenized as if you were to pass it into subprocess.run (),
@@ -22,33 +24,45 @@ class CompilationCMD (BaseModel):
         examples=[
             ["gcc", "source.c"],
             ["gcc", "main.c", "-o", "mybin"],
-            ["gcc", "-Wall", "-Wextra", "-Werror", "-pedantic", "-o", "bin", "source.c"]
-        ]
+            [
+                "gcc",
+                "-Wall",
+                "-Wextra",
+                "-Werror",
+                "-pedantic",
+                "-o",
+                "bin",
+                "source.c",
+            ],
+        ],
     )
 
-class TestCase (BaseModel):
-    command: List [str] = Field (
+
+class TestCase(BaseModel):
+    command: List[str] = Field(
         ...,
-        description = """
+        description="""
         A list of shell arguments that form the test case command.
 
         Do NOT include markdown, comments, or explanations. Only the list of shell arguments that constitue the command. 
-        """
+        """,
     )
-    expected_out: str = Field (
+    expected_out: str = Field(
         ...,
-        description = """
+        description="""
         The expected output from running the command.
 
         Do NOT include markdown, comments, or explanations. Only the expected output of the command.
-        """
+        """,
     )
 
-class TestCaseList (BaseModel):
-    test_case_list: List [TestCase] = Field (
+
+class TestCaseList(BaseModel):
+    test_case_list: List[TestCase] = Field(
         ...,
-        description="A list of test case objects, each with a command and expected output."
+        description="A list of test case objects, each with a command and expected output.",
     )
+
 
 class String(BaseModel):
     """String result of the computation."""

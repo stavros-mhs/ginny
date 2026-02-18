@@ -1,4 +1,4 @@
-from src.core.solve.workflow import iterate, execute
+from src.core.solve.workflow import execute, iterate
 
 
 def run_solve(pdf_path, accuracy, model, iter, APItimeout, SubprocessTimeout):

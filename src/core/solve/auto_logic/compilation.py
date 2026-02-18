@@ -1,12 +1,12 @@
-import subprocess
-import shlex
 import os
+import shlex
+import subprocess
 
-from src.utils.state import AgentState
 from src.utils.pretty_print import beautify
+from src.utils.state import AgentState
 
 # COMPILATION STEP
-'''
+"""
 def compilation_wrapper(state: AgentState):
     compiler = state ["compiler_choice"]
     flags = state ["flags"]
@@ -27,35 +27,33 @@ def compilation_wrapper(state: AgentState):
     )
 
     return {**state, "exit_code": exit_code, "compilation_out": compilation_out}
-'''
+"""
 
-def compilation_wrapper (state:AgentState):
-    comp_cmd = state ["comp_cmd"]
-    cwd = os.getcwd ()
-    os.chdir ("working_dir")
-    
-    result = subprocess.run (comp_cmd, capture_output=True, text=True, timeout=10)
+
+def compilation_wrapper(state: AgentState):
+    comp_cmd = state["comp_cmd"]
+    cwd = os.getcwd()
+    os.chdir("working_dir")
+
+    result = subprocess.run(comp_cmd, capture_output=True, text=True, timeout=10)
     exit_code = result.returncode
-    stderr = result.stderr.strip ()
+    stderr = result.stderr.strip()
 
     compilation_out = (
         f"compilation finished with exit code: {exit_code}\nstderr: {stderr}\n"
     )
 
     # return to previous dir
-    os.chdir (cwd)
+    os.chdir(cwd)
 
-    return {
-        **state,
-        "exit_code": exit_code,
-        "compilation_out": compilation_out
-    }
+    return {**state, "exit_code": exit_code, "compilation_out": compilation_out}
+
 
 def pass_compilation(state: AgentState):
     exit_code = state["exit_code"]
     if not exit_code:
-        beautify ("COMPILATION SUCCESSFUL")
+        beautify("COMPILATION SUCCESSFUL")
         return "continue"
     else:
-        beautify ("COMPILATION FAILED")
+        beautify("COMPILATION FAILED")
         return "retry"

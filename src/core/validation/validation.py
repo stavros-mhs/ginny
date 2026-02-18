@@ -1,6 +1,7 @@
 import shlex
 import subprocess
 
+
 def validate(test_cases: dict):
     passed = 0
     logs = open("logs.txt", "w")
