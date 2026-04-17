@@ -51,7 +51,7 @@ jobs:
             FILE=$(echo "$FILE" | xargs)
             for ((i=1; i<=RUNS; i++)); do
               echo "Running Ginny on $FILE (run $i of $RUNS)"
-              ginny solve "./test_cases/$FILE" --model="$MODEL"
+              poetry run ginny solve "./test_cases/$FILE" --model="$MODEL"
               mv snapshots "snapshots_${FILE%.*}"_run${i}
             done
           done
