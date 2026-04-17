@@ -40,3 +40,18 @@ jobs:
 
       - name: Install Dependencies
         run: poetry install
+
+      - name: Benchmark Ginny
+        run: |
+          IFS=',' read -ra FILES <<< "${{ github.event.inputs.pdfs }}"
+          RUNS=${{ github.event.inputs.runs_per_file }}
+          MODEL="${{ github.event.inputs.model }}"
+
+          for FILE in "${FILES[@]}"; do
+            FILE=$(echo "$FILE" | xargs)
+            for ((i=1; i<=RUNS; i++)); do
+              echo "Running Ginny on $FILE (run $i of $RUNS)"
+              ginny solve "./test_cases/$FILE" --model="$MODEL"
+              mv snapshots "snapshots_${FILE%.*}"_run${i}
+            done
+          done
