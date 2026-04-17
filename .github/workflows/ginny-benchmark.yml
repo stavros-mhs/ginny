@@ -1,0 +1,42 @@
+name: Ginny Benchmark
+
+on:
+  workflow_dispatch:
+    inputs:
+      pdfs:
+        description: "Comma-separated pdf file names in test_cases/"
+        required: true
+        type: string
+      mode:
+        description: "Model name (e.g. gpt-4o)"
+        required: true
+        type: string
+      runs:
+        description: "How many times Ginny will execute given the model per file"
+        required: true
+        default: "1"
+        type: string
+
+jobs:
+  solve:
+    runs-on: ubuntu-22.04
+    env:
+      LANGSMITH_API_KEY: ${{ secrets.LANGSMITH_API_KEY }}
+      LANGSMITH_ENDPOINT: "https://eu.api.smith.langchain.com"
+      LANGSMITH_TRACING: "true"
+      LANGSMITH_PROJECT: "ginny-autonomous-homework-solving-system"
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+        
+      - name: Install Poetry
+        run: pip install poetry
+
+      - name: Install Dependencies
+        run: poetry install
