@@ -7,7 +7,7 @@ on:
         description: "Comma-separated pdf file names in test_cases/"
         required: true
         type: string
-      mode:
+      model:
         description: "Model name (e.g. gpt-4o)"
         required: true
         type: string
@@ -44,7 +44,7 @@ jobs:
       - name: Benchmark Ginny
         run: |
           IFS=',' read -ra FILES <<< "${{ github.event.inputs.pdfs }}"
-          RUNS=${{ github.event.inputs.runs_per_file }}
+          RUNS=${{ github.event.inputs.runs }}
           MODEL="${{ github.event.inputs.model }}"
 
           for FILE in "${FILES[@]}"; do
